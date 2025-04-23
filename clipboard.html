@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>HTMLクリップボード変換ツール</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2em;
+      background: #f9f9f9;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 1em;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .button-row {
+      display: flex;
+      justify-content: center;
+      margin-top: 1em;
+      gap: 1em;
+    }
+    button {
+      padding: 0.5em 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.2em;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      background-color: #4CAF50;
+      color: white;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h2>HTMLクリップボード相互変換ツール</h2>
+  <textarea id="htmlBox" placeholder="ここにHTMLを入力または貼り付けます"></textarea>
+
+  <div class="button-row">
+    <button onclick="pasteFromClipboard()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16h8M8 12h8m-6 8h6a2 2 0 002-2V7.5a2.5 2.5 0 00-2.5-2.5H16V3a1 1 0 00-1-1H9a1 1 0 00-1 1v2H6.5A2.5 2.5 0 004 7.5V20a2 2 0 002 2h6" />
+      </svg>
+      ペースト
+    </button>
+
+    <button onclick="copyAsHtml()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h6m4-4v-1a2 2 0 00-2-2h-6m4-4v1a2 2 0 002 2h6m-4-4v-1a2 2 0 00-2-2h-6" />
+      </svg>
+      コピー
+    </button>
+  </div>
+
+  <script>
+    async function pasteFromClipboard() {
+      try {
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          if (item.types.includes("text/html")) {
+            const blob = await item.getType("text/html");
+            const html = await blob.text();
+            document.getElementById("htmlBox").value = html;
+            return;
+          }
+        }
+        alert("HTML形式のデータが見つかりませんでした。");
+      } catch (err) {
+        alert("クリップボードの読み取りに失敗しました: " + err);
+      }
+    }
+
+    async function copyAsHtml() {
+      const html = document.getElementById("htmlBox").value;
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([html], { type: "text/html" }),
+            "text/plain": new Blob([html.replace(/<[^>]+>/g, '')], { type: "text/plain" })
+          })
+        ]);
+        alert("HTML形式でコピーしました！");
+      } catch (err) {
+        alert("コピーに失敗しました: " + err);
+      }
+    }
+  </script>
+</body>
+</html>
